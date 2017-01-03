@@ -1,0 +1,25 @@
+class EasyEngineCommand < Vagrant.plugin(2, :command)
+  def self.synopsis
+    "Allows you to run ee commands inside the box"
+  end
+
+  def execute
+    puts "Running your command."
+
+    #puts @env.to_yaml
+    args = ARGV
+
+    command = args.join(" ")
+
+    exec("vagrant ssh -c \"sudo -H #{command}\"")
+    0
+  end
+end
+
+class EEPlugin < Vagrant.plugin(2)
+  name "My Plugin"
+
+  command "ee" do
+    EasyEngineCommand
+  end
+end
