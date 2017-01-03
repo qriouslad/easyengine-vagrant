@@ -26,3 +26,7 @@ else
 fi
 
 printSpacer
+echo "Setting up sites"
+#if site folder no exist, add it, etc
+
+printSpacer
