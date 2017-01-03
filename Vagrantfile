@@ -1,18 +1,24 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+require 'yaml'
+
 vagrant_dir = File.expand_path(File.dirname(__FILE__))
 
+# Main file starts here
 Vagrant.configure("2") do |config|
 
   # Store the current version of Vagrant for use in conditionals when dealing
   # with possible backward compatible issues.
   vagrant_version = Vagrant::VERSION.sub(/^v/, '')
 
+  # Load YAML configuration
+  ee_config        = YAML.load_file("#{vagrant_dir}/ee-config.yaml")
+
   # Configurations from 1.0.x can be placed in Vagrant 1.1.x specs like the following.
   config.vm.provider :virtualbox do |v|
     v.customize ["modifyvm", :id, "--memory", 1024]
-    v.customize ["modifyvm", :id, "--cpus", 1]
+    v.customize ["modifyvm", :id, "--cpus", 2]
     v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
     v.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
 
@@ -26,13 +32,13 @@ Vagrant.configure("2") do |config|
     v.update_guest_tools = true
     v.optimize_power_consumption = false
     v.memory = 1024
-    v.cpus = 1
+    v.cpus = 2
   end
 
   # Configuration options for the VMware Fusion provider.
   config.vm.provider :vmware_fusion do |v|
     v.vmx["memsize"] = "1024"
-    v.vmx["numvcpus"] = "1"
+    v.vmx["numvcpus"] = "2"
   end
 
   # SSH Agent Forwarding
@@ -46,24 +52,24 @@ Vagrant.configure("2") do |config|
   # This box is provided by Ubuntu vagrantcloud.com and is a nicely sized (332MB)
   # box containing the Ubuntu 14.04 Trusty 64 bit release. Once this box is downloaded
   # to your host computer, it is cached for future use under the specified box name.
-  config.vm.box = "ubuntu/trusty64"
+  config.vm.box = "boxcutter/ubuntu1604"
 
   # The Parallels Provider uses a different naming scheme.
-  config.vm.provider :parallels do |v, override|
-    override.vm.box = "parallels/ubuntu-14.04"
-  end
+  #config.vm.provider :parallels do |v, override|
+  #  override.vm.box = "boxcutter/ubuntu1604"
+  #end
 
   # The VMware Fusion Provider uses a different naming scheme.
-  config.vm.provider :vmware_fusion do |v, override|
-    override.vm.box = "netsensia/ubuntu-trusty64"
-  end
-  
-  # VMWare Workstation can use the same package as Fusion
-  config.vm.provider :vmware_workstation do |v, override|
-    override.vm.box = "netsensia/ubuntu-trusty64"
-  end
+  #config.vm.provider :vmware_fusion do |v, override|
+  #  override.vm.box = "boxcutter/ubuntu1604"
+  #end
 
-  config.vm.hostname = "ee"
+  # VMWare Workstation can use the same package as Fusion
+  #config.vm.provider :vmware_workstation do |v, override|
+  #  override.vm.box = "boxcutter/ubuntu1604"
+  #end
+
+  config.vm.hostname = "box.ee"
 
   # Local Machine Hosts
   #
@@ -108,7 +114,7 @@ Vagrant.configure("2") do |config|
   # should be changed. If more than one VM is running through VirtualBox, including other
   # Vagrant machines, different subnets should be used for each.
   #
-  config.vm.network :private_network, ip: "192.168.50.4"
+  config.vm.network :private_network, ip: "192.168.50.88"
 
   # Public Network (disabled)
   #
@@ -222,7 +228,9 @@ Vagrant.configure("2") do |config|
   end
 
   # Provisioning
-  #
+
+  # Support standard provisioning files in Vagrant below
+
   # Process one or more provisioning scripts depending on the existence of custom files.
   #
   # provison-pre.sh acts as a pre-hook to our default provisioning script. Anything that
@@ -241,7 +249,7 @@ Vagrant.configure("2") do |config|
   if File.exists?(File.join(vagrant_dir,'provision','provision-custom.sh')) then
     config.vm.provision :shell, :path => File.join( "provision", "provision-custom.sh" )
   else
-    config.vm.provision :shell, :path => File.join( "provision", "provision.sh" )
+    config.vm.provision :shell, :path => "ee-provision.sh" # Default file to provision
   end
 
   # provision-post.sh acts as a post-hook to the default provisioning. Anything that should
@@ -254,10 +262,10 @@ Vagrant.configure("2") do |config|
 
   # Always start MySQL on boot, even when not running the full provisioner
   # (run: "always" support added in 1.6.0)
-#  if vagrant_version >= "1.6.0"
-#    config.vm.provision :shell, inline: "sudo service mysql restart", run: "always"
-#    config.vm.provision :shell, inline: "sudo service nginx restart", run: "always"
-#  end
+  #  if vagrant_version >= "1.6.0"
+  #    config.vm.provision :shell, inline: "sudo service mysql restart", run: "always"
+  #    config.vm.provision :shell, inline: "sudo service nginx restart", run: "always"
+  #  end
 
   # Vagrant Triggers
   #
@@ -275,8 +283,9 @@ Vagrant.configure("2") do |config|
   #  config.trigger.before :suspend, :stdout => true do
   #    run "vagrant ssh -c 'vagrant_suspend'"
   #  end
-   # config.trigger.before :destroy, :stdout => true do
-    #  run "vagrant ssh -c 'vagrant_destroy'"
-    #end
+  #  config.trigger.before :destroy, :stdout => true do
+  #    run "vagrant ssh -c 'vagrant_destroy'"
+  #  end
   #end
+
 end
