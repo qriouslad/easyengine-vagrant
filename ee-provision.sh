@@ -6,7 +6,7 @@ function printSpacer()
 }
 
 # Set git username/e-mail used in EE
-sudo echo -e "[user]\n\tname = EasyEngine\n\temail = root@easyengine.com" > ~/.gitconfig
+sudo echo -e "[user]\n\tname = $1\n\temail = $2" > ~/.gitconfig
 
 printSpacer
 

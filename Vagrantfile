@@ -13,7 +13,7 @@ Vagrant.configure("2") do |config|
   vagrant_version = Vagrant::VERSION.sub(/^v/, '')
 
   # Load YAML configuration
-  ee_config        = YAML.load_file("#{vagrant_dir}/ee-config.yaml")
+  ee_config = YAML.load_file("#{vagrant_dir}/ee-config.yaml")
 
   # Configurations from 1.0.x can be placed in Vagrant 1.1.x specs like the following.
   config.vm.provider :virtualbox do |v|
@@ -227,45 +227,17 @@ Vagrant.configure("2") do |config|
     eval(IO.read(File.join(vagrant_dir,'Customfile')), binding)
   end
 
-  # Provisioning
-
-  # Support standard provisioning files in Vagrant below
-
-  # Process one or more provisioning scripts depending on the existence of custom files.
-  #
-  # provison-pre.sh acts as a pre-hook to our default provisioning script. Anything that
-  # should run before the shell commands laid out in provision.sh (or your provision-custom.sh
-  # file) should go in this script. If it does not exist, no extra provisioning will run.
-  if File.exists?(File.join(vagrant_dir,'provision','provision-pre.sh')) then
-    config.vm.provision :shell, :path => File.join( "provision", "provision-pre.sh" )
-  end
-
-  # provision.sh or provision-custom.sh
+  # ee-provision.sh or ee-provision-custom.sh
   #
   # By default, Vagrantfile is set to use the provision.sh bash script located in the
   # provision directory. If it is detected that a provision-custom.sh script has been
   # created, that is run as a replacement. This is an opportunity to replace the entirety
   # of the provisioning provided by default.
-  if File.exists?(File.join(vagrant_dir,'provision','provision-custom.sh')) then
-    config.vm.provision :shell, :path => File.join( "provision", "provision-custom.sh" )
+  if File.exists?(File.join(vagrant_dir,'ee-provision-custom.sh')) then
+    config.vm.provision :shell, :path => "ee-provision-custom.sh", :args => [ee_config['name'], ee_config['email']]
   else
-    config.vm.provision :shell, :path => "ee-provision.sh" # Default file to provision
+    config.vm.provision :shell, :path => "ee-provision.sh", :args => [ee_config['name'], ee_config['email']]
   end
-
-  # provision-post.sh acts as a post-hook to the default provisioning. Anything that should
-  # run after the shell commands laid out in provision.sh or provision-custom.sh should be
-  # put into this file. This provides a good opportunity to install additional packages
-  # without having to replace the entire default provisioning script.
-  if File.exists?(File.join(vagrant_dir,'provision','provision-post.sh')) then
-    config.vm.provision :shell, :path => File.join( "provision", "provision-post.sh" )
-  end
-
-  # Always start MySQL on boot, even when not running the full provisioner
-  # (run: "always" support added in 1.6.0)
-  #  if vagrant_version >= "1.6.0"
-  #    config.vm.provision :shell, inline: "sudo service mysql restart", run: "always"
-  #    config.vm.provision :shell, inline: "sudo service nginx restart", run: "always"
-  #  end
 
   # Vagrant Triggers
   #
