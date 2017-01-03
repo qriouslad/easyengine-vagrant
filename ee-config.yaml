@@ -1,0 +1,16 @@
+---
+name: EasyEngine
+email: root@easyengine.com
+hosts:
+-
+  domain: wp.ee
+  type:
+    - php7 #TODO: Needs extra validation to answer y/n?
+    - mysql
+  db: wp.sql
+-
+  domain: wp2.ee
+  type:
+    - wp
+  db:
+
