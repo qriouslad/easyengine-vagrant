@@ -18,7 +18,9 @@ if [ ! -f /usr/local/bin/ee ]; then
   sudo -H . /etc/bash_completion.d/ee_auto.rc #source X TODO: This is not working atm for the root user.
   printSpacer
   echo "Installing stack"
-  ee stack install || exit 1
+  ee stack install --web
+  ee stack install --php7
+  ee stack install --admin || exit 1
   printSpacer
   echo "All done! Take not of your credentials above, you can use these credentials to reach phpMyAdmin and similar tools at http://box.ee:22222";
 else
